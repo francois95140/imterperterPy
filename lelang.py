@@ -8,13 +8,15 @@ from genereTreeGraphviz2 import printTreeGraph
 #https://pastebin.com/LCHRmVKm
  
 reserved={
-        'print':'PRINT'
- 
+        'print':'PRINT',
+        'while': 'WHILE',
+        'if': 'IF',
+        'else': 'ELSE'
         }
  
 tokens = [ 'NUMBER','MINUS', 'PLUS','TIMES','DIVIDE', 'LPAREN',
           'RPAREN', 'OR', 'AND', 'SEMI', 'EGAL', 'NAME', 'INF', 'SUP',
-          'EGALEGAL','INFEG','INCREMENT','DECREMENT']+ list(reserved.values())
+          'EGALEGAL','INFEG','INCREMENT','DECREMENT', 'LBRACKET', 'RBRACKET']+ list(reserved.values())
  
 t_PLUS = r'\+' 
 t_MINUS = r'-' 
@@ -23,7 +25,9 @@ t_DIVIDE = r'/'
 t_INCREMENT = r'\+\+'
 t_DECREMENT = r'\-\-'
 t_LPAREN = r'\('
-t_RPAREN = r'\)' 
+t_RPAREN = r'\)'
+t_LBRACKET = r'\{'
+t_RBRACKET = r'\}'
 t_OR = r'\|'
 t_AND = r'\&'
 t_SEMI = r';'
@@ -90,6 +94,9 @@ def evalinst(t):
     if t[0] == 'bloc' :  
         evalinst(t[1])
         evalinst(t[2])
+    if t[0] == 'while':
+        while evalExpr(t[1]):
+            evalinst(t[2])
  
 def evalExpr(t) : 
     print('evalExpr', t)
@@ -100,7 +107,12 @@ def evalExpr(t) :
     if t[0]=='*' : return evalExpr(t[1])*evalExpr(t[2])
     if t[0]=='/' : return evalExpr(t[1])/evalExpr(t[2])
 
- 
+    if t[0] == '<': return evalExpr(t[1]) < evalExpr(t[2])
+    if t[0] == '<=': return evalExpr(t[1]) <= evalExpr(t[2])
+    if t[0] == '==': return evalExpr(t[1]) == evalExpr(t[2])
+    if t[0] == '>': return evalExpr(t[1]) > evalExpr(t[2])
+    if t[0] == '&': return bool(evalExpr(t[1]) and evalExpr(t[2]))
+    if t[0] == '|': return bool(evalExpr(t[1]) or evalExpr(t[2]))
  
 def p_start(p):
     'start : bloc'
@@ -110,10 +122,17 @@ def p_start(p):
  
 def p_bloc(p):
     '''bloc : bloc statement SEMI
-    | statement SEMI'''
-    if len(p) ==4 :
+            | statement SEMI
+            | bloc statement
+            | statement'''
+    if len(p) == 3:
+        if p[2] == ';':
+            p[0] = ('bloc', p[1], 'empty')
+        else:
+            p[0] = ('bloc', p[1], p[2])
+    elif len(p) == 4:
         p[0] = ('bloc', p[1], p[2])
-    else :
+    else:
         p[0] = ('bloc', p[1], 'empty')
  
  
@@ -153,7 +172,10 @@ def p_expression_binop_inf(p):
     | expression SUP expression''' 
     p[0] = (p[2],p[1],p[3])
  
- 
+def p_statement_while(p):
+    'statement : WHILE LPAREN expression RPAREN LBRACKET bloc RBRACKET'
+    p[0] = ('while', p[3], p[6])
+
 def p_expression_group(p): 
     'expression : LPAREN expression RPAREN' 
     p[0] = p[2] 
@@ -169,8 +191,10 @@ def p_expression_name(p):
 def p_error(p):    print("Syntax error in input!")
  
 yacc.yacc()
-s = 'x=4; --x; print(x);'
-s2 = 'x=4; x--; print(x);'
-s1 = 'x=4; x++; print(x);'
+#s = 'x=4; --x; print(x);'
+#s = 'x=4; x--; print(x);'
+#s = 'x=4; x++; print(x);'
+s = 'x = 2; while(x<5){print(x);x++;};'
+
 yacc.parse(s)
  
