@@ -11,7 +11,8 @@ reserved={
         'print':'PRINT',
         'while': 'WHILE',
         'if': 'IF',
-        'else': 'ELSE'
+        'else': 'ELSE',
+        'for': 'FOR'
         }
  
 tokens = [ 'NUMBER','MINUS', 'PLUS','TIMES','DIVIDE', 'LPAREN',
@@ -97,6 +98,11 @@ def evalinst(t):
     if t[0] == 'while':
         while evalExpr(t[1]):
             evalinst(t[2])
+    if t[0] == 'for':
+        evalinst(t[1])
+        while evalExpr(t[2]):
+            evalinst(t[4])
+            evalinst(t[3])
  
 def evalExpr(t) : 
     print('evalExpr', t)
@@ -176,6 +182,10 @@ def p_statement_while(p):
     'statement : WHILE LPAREN expression RPAREN LBRACKET bloc RBRACKET'
     p[0] = ('while', p[3], p[6])
 
+def p_statement_for(p):
+    'statement : FOR LPAREN statement SEMI expression SEMI statement RPAREN LBRACKET bloc RBRACKET'
+    p[0] = ('for', p[3], p[5], p[7], p[10])
+
 def p_expression_group(p): 
     'expression : LPAREN expression RPAREN' 
     p[0] = p[2] 
@@ -194,7 +204,8 @@ yacc.yacc()
 #s = 'x=4; --x; print(x);'
 #s = 'x=4; x--; print(x);'
 #s = 'x=4; x++; print(x);'
-s = 'x = 2; while(x<5){print(x);x++;};'
+#s = 'x = 2; while(x<5){print(x);x++;}'
+#s = 'for (x = 0; x < 5; x++) {print(x);}
 
 yacc.parse(s)
  
