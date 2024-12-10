@@ -14,15 +14,15 @@ reserved={
  
 tokens = [ 'NUMBER','MINUS', 'PLUS','TIMES','DIVIDE', 'LPAREN',
           'RPAREN', 'OR', 'AND', 'SEMI', 'EGAL', 'NAME', 'INF', 'SUP',
-          'EGALEGAL','INFEG','INCREMENT']+ list(reserved.values())
+          'EGALEGAL','INFEG','INCREMENT','DECREMENT']+ list(reserved.values())
  
 t_PLUS = r'\+' 
 t_MINUS = r'-' 
 t_TIMES = r'\*' 
 t_DIVIDE = r'/'
 t_INCREMENT = r'\+\+'
-t_DECREMENT = r'\+\+'
-t_LPAREN = r'\(' 
+t_DECREMENT = r'\-\-'
+t_LPAREN = r'\('
 t_RPAREN = r'\)' 
 t_OR = r'\|'
 t_AND = r'\&'
@@ -69,6 +69,11 @@ def evalinst(t):
     print('evalInst', t)
     if t == 'empty' : return 
     if t[0] == 'assign' : names[t[1]]=evalExpr(t[2])
+    if t[0] == 'decrement':
+        if t[1] in names:
+            names[t[1]] -= 1
+        else:
+            print(f"Error: variable '{t[1]}' is not defined.")
     if t[0] == 'increment':
         if t[1] in names:
             names[t[1]] += 1
@@ -119,6 +124,10 @@ def p_statement_increment(p):
     '''statement : NAME INCREMENT'''
     p[0] = ('increment', p[1])
 
+def p_statement_decrement(p):
+    '''statement : NAME DECREMENT'''
+    p[0] = ('decrement', p[1])
+
 def p_expression_binop_inf(p): 
     '''expression : expression INF expression
     | expression INFEG expression
@@ -148,6 +157,6 @@ def p_expression_name(p):
 def p_error(p):    print("Syntax error in input!")
  
 yacc.yacc()
-s = 'x=4; x++; print(x);'
+s = 'x=4; --x; print(x);'
 yacc.parse(s)
  
