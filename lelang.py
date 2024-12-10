@@ -69,6 +69,13 @@ def evalinst(t):
     print('evalInst', t)
     if t == 'empty' : return 
     if t[0] == 'assign' : names[t[1]]=evalExpr(t[2])
+    if t[0] == 'decrement_prefix':
+        if t[1] in names:
+            names[t[1]] -= 1
+            return names[t[1]]  # Retourne la valeur après décrémentation
+        else:
+            print(f"Error: variable '{t[1]}' is not defined.")
+            return 0
     if t[0] == 'decrement':
         if t[1] in names:
             names[t[1]] -= 1
@@ -92,6 +99,7 @@ def evalExpr(t) :
     if t[0]=='-' : return evalExpr(t[1])-evalExpr(t[2])
     if t[0]=='*' : return evalExpr(t[1])*evalExpr(t[2])
     if t[0]=='/' : return evalExpr(t[1])/evalExpr(t[2])
+
  
  
 def p_start(p):
@@ -119,7 +127,11 @@ def p_statement_assign(p):
     'statement : NAME EGAL expression'
     #names[p[1]]=p[3] 
     p[0] = ('assign', p[1], p[3])
- 
+
+def p_expression_decrement_prefix(p):
+    '''statement : DECREMENT NAME'''
+    p[0] = ('decrement_prefix', p[2])
+
 def p_statement_increment(p):
     '''statement : NAME INCREMENT'''
     p[0] = ('increment', p[1])
@@ -158,5 +170,7 @@ def p_error(p):    print("Syntax error in input!")
  
 yacc.yacc()
 s = 'x=4; --x; print(x);'
+s2 = 'x=4; x--; print(x);'
+s1 = 'x=4; x++; print(x);'
 yacc.parse(s)
  
