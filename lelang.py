@@ -9,14 +9,15 @@ from genereTreeGraphviz2 import printTreeGraph
  
 reserved={
         'print':'PRINT',
+        'for': 'FOR',
         'while': 'WHILE',
-        'if': 'IF',
-        'else': 'ELSE',
-        'for': 'FOR'
+        'switch': 'SWITCH',
+        'case': 'CASE',
+        'default': 'DEFAULT'
         }
  
 tokens = [ 'NUMBER','MINUS', 'PLUS','TIMES','DIVIDE', 'LPAREN',
-          'RPAREN', 'OR', 'AND', 'SEMI', 'EGAL', 'NAME', 'INF', 'SUP',
+          'RPAREN', 'OR', 'AND', 'SEMI', 'EGAL', 'NAME', 'INF', 'COLON','SUP',
           'EGALEGAL','INFEG','INCREMENT','DECREMENT', 'LBRACKET', 'RBRACKET']+ list(reserved.values())
  
 t_PLUS = r'\+' 
@@ -25,6 +26,7 @@ t_TIMES = r'\*'
 t_DIVIDE = r'/'
 t_INCREMENT = r'\+\+'
 t_DECREMENT = r'\-\-'
+t_COLON = r'\:'
 t_LPAREN = r'\('
 t_RPAREN = r'\)'
 t_LBRACKET = r'\{'
@@ -77,21 +79,14 @@ def evalinst(t):
     if t[0] == 'decrement_prefix':
         if t[1] in names:
             names[t[1]] -= 1
-            return names[t[1]]  # Retourne la valeur après décrémentation
-        else:
-            print(f"Error: variable '{t[1]}' is not defined.")
-            return 0
     if t[0] == 'decrement':
         if t[1] in names:
             names[t[1]] -= 1
-        else:
-            print(f"Error: variable '{t[1]}' is not defined.")
     if t[0] == 'increment':
         if t[1] in names:
             names[t[1]] += 1
-        else:
-            print(f"Error: variable '{t[1]}' is not defined.")
     if t[0] == 'print' : print('CALC>' , evalExpr(t[1]))
+
     if t[0] == 'bloc' :  
         evalinst(t[1])
         evalinst(t[2])
@@ -103,7 +98,20 @@ def evalinst(t):
         while evalExpr(t[2]):
             evalinst(t[4])
             evalinst(t[3])
- 
+
+    if t[0] == 'switch':
+        expr_value = evalExpr(t[1])
+        executed = False
+        for case in t:
+            if type(case) == tuple:
+                case_value, case_bloc = case[1], case[2]
+                if expr_value == evalExpr(case_value):
+                    evalinst(case_bloc)
+                    executed = True
+                    break
+        if not executed and t[3] != '':
+            evalinst(t[3][1])
+
 def evalExpr(t) : 
     print('evalExpr', t)
     if type(t) is int or type(t) is float : return t
@@ -125,7 +133,7 @@ def p_start(p):
     print(p[1])
     printTreeGraph(p[1])
     evalinst(p[1])
- 
+
 def p_bloc(p):
     '''bloc : bloc statement SEMI
             | statement SEMI
@@ -153,7 +161,7 @@ def p_statement_assign(p):
     #names[p[1]]=p[3] 
     p[0] = ('assign', p[1], p[3])
 
-def p_expression_decrement_prefix(p):
+def p_statement_decrement_prefix(p):
     '''statement : DECREMENT NAME'''
     p[0] = ('decrement_prefix', p[2])
 
@@ -177,7 +185,32 @@ def p_expression_binop_inf(p):
     | expression DIVIDE expression
     | expression SUP expression''' 
     p[0] = (p[2],p[1],p[3])
- 
+
+def p_statement_switch(p):
+    '''statement : SWITCH LPAREN expression RPAREN LBRACKET case cases default RBRACKET'''
+    p[0] = ('switch', p[3], p[6], p[7], p[8])
+
+def p_case(p):
+    '''case : CASE expression COLON bloc'''
+    p[0] = ('case', p[2], p[4])
+
+def p_cases(p):
+    '''cases : cases case
+             | case
+             | '''
+    if len(p) == 3:
+        p[0] = (p[1],p[2])
+    else:
+        p[0] = p[1]
+
+def p_default(p):
+    '''default : DEFAULT COLON bloc
+               | '''
+    if p[1] == 'default':
+        p[0] = ('default', p[3])  # ('default', bloc)
+    else:
+        p[0] = ('default')
+
 def p_statement_while(p):
     'statement : WHILE LPAREN expression RPAREN LBRACKET bloc RBRACKET'
     p[0] = ('while', p[3], p[6])
@@ -201,11 +234,24 @@ def p_expression_name(p):
 def p_error(p):    print("Syntax error in input!")
  
 yacc.yacc()
-#s = 'x=4; --x; print(x);'
+#s = 'x=4; --x;print(x);'
 #s = 'x=4; x--; print(x);'
 #s = 'x=4; x++; print(x);'
 #s = 'x = 2; while(x<5){print(x);x++;}'
-#s = 'for (x = 0; x < 5; x++) {print(x);}
-
-yacc.parse(s)
+#s = 'for (x = 0; x < 5; x++) {print(x);}'
+#s = 'x = pop; print(x);'
+s = '''
+x = 2;
+switch (x) {
+    case 1: 
+        print(1);
+    case 2: 
+        print(2);
+    default: 
+        print(0);
+}        
+'''
+with open('index.lang', 'r') as file:
+    contenu = file.read()
+    resultat = yacc.parse(contenu)
  
