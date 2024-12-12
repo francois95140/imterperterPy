@@ -1,11 +1,7 @@
 # -*- coding: utf-8 -*-
- 
 import ply.lex as lex
 import ply.yacc as yacc
 from genereTreeGraphviz2 import printTreeGraph
- 
- 
-#https://pastebin.com/LCHRmVKm
  
 reserved={
         'print':'PRINT',
@@ -15,16 +11,16 @@ reserved={
         'for': 'FOR'
         }
  
-tokens = [ 'NUMBER','MINUS', 'PLUS','TIMES','DIVIDE', 'LPAREN',
-          'RPAREN', 'OR', 'AND', 'SEMI', 'EGAL', 'NAME', 'INF', 'SUP',
-          'EGALEGAL','INFEG','INCREMENT','DECREMENT', 'LBRACKET', 'RBRACKET']+ list(reserved.values())
+tokens = [
+    'NUMBER','MINUS', 'PLUS','TIMES','DIVIDE', 'LPAREN',
+    'RPAREN', 'OR', 'AND', 'SEMI', 'EGAL', 'NAME', 'INF', 'SUP',
+    'EGALEGAL','INFEG','INCREMENT','DECREMENT', 'LBRACKET', 'RBRACKET'
+]+ list(reserved.values())
  
-t_PLUS = r'\+' 
-t_MINUS = r'-' 
-t_TIMES = r'\*' 
+t_PLUS = r'\+'
+t_MINUS = r'-'
+t_TIMES = r'\*'
 t_DIVIDE = r'/'
-t_INCREMENT = r'\+\+'
-t_DECREMENT = r'\-\-'
 t_LPAREN = r'\('
 t_RPAREN = r'\)'
 t_LBRACKET = r'\{'
@@ -33,7 +29,8 @@ t_OR = r'\|'
 t_AND = r'\&'
 t_SEMI = r';'
 t_EGAL = r'\='
-#t_NAME = r'[a-zA-Z_][a-zA-Z_0-9]*'
+t_INCREMENT = r'\+\+'
+t_DECREMENT = r'--'
 t_INF = r'\<'
 t_SUP = r'>'
 t_INFEG = r'\<\='
@@ -44,12 +41,11 @@ def t_NAME(t):
     t.type = reserved.get(t.value,'NAME')    # Check for reserved words
     return t
  
- 
 def t_NUMBER(t): 
     r'\d+' 
     t.value = int(t.value) 
     return t
- 
+
 t_ignore = " \t"
  
 def t_newline(t):
@@ -61,8 +57,8 @@ def t_error(t):
     t.lexer.skip(1)
  
 lex.lex()
- 
 names={}
+
 precedence = ( 
         ('left','OR' ), 
         ('left','AND'), 
@@ -70,31 +66,29 @@ precedence = (
         ('left','PLUS', 'MINUS' ), 
         ('left','TIMES', 'DIVIDE'), 
         )
+
+
 def evalinst(t):
     print('evalInst', t)
     if t == 'empty' : return 
     if t[0] == 'assign' : names[t[1]]=evalExpr(t[2])
-    if t[0] == 'decrement_prefix':
-        if t[1] in names:
-            names[t[1]] -= 1
-            return names[t[1]]  # Retourne la valeur après décrémentation
-        else:
-            print(f"Error: variable '{t[1]}' is not defined.")
-            return 0
-    if t[0] == 'decrement':
-        if t[1] in names:
-            names[t[1]] -= 1
-        else:
-            print(f"Error: variable '{t[1]}' is not defined.")
-    if t[0] == 'increment':
-        if t[1] in names:
-            names[t[1]] += 1
-        else:
-            print(f"Error: variable '{t[1]}' is not defined.")
     if t[0] == 'print' : print('CALC>' , evalExpr(t[1]))
+    if t[0] == 'increment' : names[t[1]] += 1
+    if t[0] == 'decrement' : names[t[1]] -= 1
+    if t[0] == 'decrement_prefix': 
+        names[t[1]] -= 1
+        return names[t[1]]
+    if t[0] == 'increment_prefix': 
+        names[t[1]] += 1
+        return names[t[1]]+1
     if t[0] == 'bloc' :  
         evalinst(t[1])
         evalinst(t[2])
+    if t[0] == 'if':
+        if evalExpr(t[1]):
+            evalinst(t[2])
+        elif len(t) > 3:
+            evalinst(t[3])
     if t[0] == 'while':
         while evalExpr(t[1]):
             evalinst(t[2])
@@ -141,12 +135,10 @@ def p_bloc(p):
     else:
         p[0] = ('bloc', p[1], 'empty')
  
- 
 def p_statement_expr(p): 
     'statement : PRINT LPAREN expression RPAREN' 
     #print(p[3]) 
     p[0] = ('print', p[3])
- 
  
 def p_statement_assign(p):
     'statement : NAME EGAL expression'
@@ -165,6 +157,14 @@ def p_statement_decrement(p):
     '''statement : NAME DECREMENT'''
     p[0] = ('decrement', p[1])
 
+def p_statement_if(p):
+    '''statement : IF LPAREN expression RPAREN LBRACKET bloc RBRACKET
+                 | IF LPAREN expression RPAREN LBRACKET bloc RBRACKET ELSE LBRACKET bloc RBRACKET'''
+    if len(p) == 8:
+        p[0] = ('if', p[3], p[6])
+    else:
+        p[0] = ('if', p[3], p[6], p[10])
+
 def p_expression_binop_inf(p): 
     '''expression : expression INF expression
     | expression INFEG expression
@@ -175,7 +175,9 @@ def p_expression_binop_inf(p):
     | expression TIMES expression
     | expression MINUS expression
     | expression DIVIDE expression
-    | expression SUP expression''' 
+    | expression SUP expression
+    | expression INCREMENT expression
+    | expression DECREMENT expression''' 
     p[0] = (p[2],p[1],p[3])
  
 def p_statement_while(p):
@@ -201,11 +203,19 @@ def p_expression_name(p):
 def p_error(p):    print("Syntax error in input!")
  
 yacc.yacc()
-#s = 'x=4; --x; print(x);'
-#s = 'x=4; x--; print(x);'
-#s = 'x=4; x++; print(x);'
-#s = 'x = 2; while(x<5){print(x);x++;}'
-#s = 'for (x = 0; x < 5; x++) {print(x);}
-
+print ("---------------------------------------------------------------")
+s = 'x=4; --x; print(x);'
+yacc.parse(s)
+print ("---------------------------------------------------------------")
+s = 'x=4; x--; print(x);'
+yacc.parse(s)
+print ("---------------------------------------------------------------")
+s = 'x=4; x++; print(x);'
+yacc.parse(s)
+print ("---------------------------------------------------------------")
+s = 'x = 2; while(x<5){print(x);x++;}'
+yacc.parse(s)
+print ("---------------------------------------------------------------")
+s = 'for (x = 0; x < 5; x++) {print(x);}'
 yacc.parse(s)
  
