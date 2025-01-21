@@ -13,13 +13,15 @@ reserved={
         'while': 'WHILE',
         'switch': 'SWITCH',
         'case': 'CASE',
-        'default': 'DEFAULT'
+        'default': 'DEFAULT',
+        'if': 'IF',
+        'else': 'ELSE'
         }
  
 tokens = [
     'NUMBER','MINUS', 'PLUS','TIMES','DIVIDE', 'LPAREN',
     'RPAREN', 'OR', 'AND', 'SEMI', 'EGAL', 'NAME', 'INF', 'SUP',
-    'EGALEGAL','INFEG','INCREMENT','DECREMENT', 'LBRACKET', 'RBRACKET'
+    'EGALEGAL','INFEG','INCREMENT','DECREMENT', 'COLON','LBRACKET', 'RBRACKET'
 ]+ list(reserved.values())
  
 t_PLUS = r'\+'
