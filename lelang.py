@@ -1,11 +1,9 @@
-# -*- coding: utf-8 -*-
  
 import ply.lex as lex
 import ply.yacc as yacc
 from genereTreeGraphviz2 import printTreeGraph
  
  
-#https://pastebin.com/LCHRmVKm
  
 reserved={
         'print':'PRINT',
@@ -15,7 +13,8 @@ reserved={
         'case': 'CASE',
         'default': 'DEFAULT',
         'if': 'IF',
-        'else': 'ELSE'
+        'else': 'ELSE',
+        'elif': 'ELIF'
         }
  
 tokens = [
@@ -54,16 +53,24 @@ def t_NUMBER(t):
     t.value = int(t.value) 
     return t
 
-t_ignore = " \t"
- 
+def t_COMMENT(t):
+    r'//.*'
+    pass
+
+# def t_MULTILINECOMMENT(t):
+#     r'\/\*[\s\S]*?\*\/'
+#     pass
+
+t_ignore = ' \t'
+
 def t_newline(t):
     r'\n+'
     t.lexer.lineno += t.value.count("\n")
- 
+
 def t_error(t):
     print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
- 
+
 lex.lex()
 names={}
 

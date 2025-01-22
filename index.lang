@@ -8,5 +8,13 @@ switch (x) {
     default:
         print(0);
 }
+// test
+
+// /* ggggg */
+// /* 
+// * hhh
+// * ggg
+// */
+
 
 print(x);
