@@ -37,6 +37,7 @@ Interpréteur de mini Langage
 * [ ] Fonctions void
 * [ ] Fonction return avec coupe circuit
 * [ ] Gérer les elif
+* [X] Gérer les swish case
 * [ ] Scope
 * [ ] Fonctions avec return et scope des variables et gestion de la pile d’exécution
 * [ ] Les tableaux (suivant degré d’aboutissement : push, pop, len, printTab, init)
