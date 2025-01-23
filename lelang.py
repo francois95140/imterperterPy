@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+ 
 import ply.lex as lex
 import ply.yacc as yacc
 from genereTreeGraphviz2 import printTreeGraph
@@ -10,7 +12,8 @@ reserved={
         'case': 'CASE',
         'default': 'DEFAULT',
         'if': 'IF',
-        'else': 'ELSE'
+        'else': 'ELSE',
+        'elif': 'ELIF'
         }
  
 tokens = [
@@ -45,25 +48,29 @@ def t_NAME(t):
     t.type = reserved.get(t.value,'NAME')    # Check for reserved words
     return t
 
-def t_COMMENT(t):
-    r'//.*\n'
-    return t
-
 def t_NUMBER(t): 
     r'\d+' 
     t.value = int(t.value) 
     return t
 
-t_ignore = " \t"
- 
+def t_COMMENT(t):
+    r'//.*'
+    pass
+
+# def t_MULTILINECOMMENT(t):
+#     r'\/\*[\s\S]*?\*\/'
+#     pass
+
+t_ignore = ' \t'
+
 def t_newline(t):
     r'\n+'
     t.lexer.lineno += t.value.count("\n")
- 
+
 def t_error(t):
     print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
- 
+
 lex.lex()
 names={}
 
