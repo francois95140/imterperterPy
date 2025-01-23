@@ -17,7 +17,7 @@ reserved={
         }
  
 tokens = [
-    'NUMBER','MINUS', 'PLUS','TIMES','DIVIDE', 'LPAREN',
+    'NUMBER', 'STRING', 'MINUS', 'PLUS','TIMES','DIVIDE', 'LPAREN',
     'RPAREN', 'OR', 'AND', 'SEMI', 'EGAL', 'NAME', 'INF', 'SUP',
     'EGALEGAL','INFEG','INCREMENT','DECREMENT', 'COLON', 'COMMA','LBRACKET', 'RBRACKET'
 ]+ list(reserved.values())
@@ -51,6 +51,11 @@ def t_NAME(t):
 def t_NUMBER(t): 
     r'\d+' 
     t.value = int(t.value) 
+    return t
+
+def t_STRING(t):
+    r'"[^"]*"'
+    t.value = t.value[1:-1]
     return t
 
 def t_COMMENT(t):
@@ -94,6 +99,10 @@ def evalinst(t):
     elif t[0] == 'assign':
         names[t[1]] = evalExpr(t[2])
     if t[0] == 'print' : print('CALC>' , evalExpr(t[1]))
+    if t[0] == 'print_multi':
+        print_values = [evalExpr(expr) for expr in t[1]]
+        print_output = ' '.join(str(val) for val in print_values)
+        print('CALC>', print_output)
     if t[0] == 'increment' : names[t[1]] += 1
     if t[0] == 'decrement' : names[t[1]] -= 1
     if t[0] == 'decrement_prefix':
@@ -141,6 +150,10 @@ def evalinst(t):
 def evalExpr(t) : 
     print('evalExpr', t)
     if type(t) is int or type(t) is float : return t
+    if type(t) is str:
+        if t in names:
+            return names[t]
+        return t
     if type(t) is str : return names[t]
     if t[0]=='+' : return evalExpr(t[1])+evalExpr(t[2])
     if t[0]=='-' : return evalExpr(t[1])-evalExpr(t[2])
@@ -175,11 +188,17 @@ def p_bloc(p):
     else:
         p[0] = ('bloc', p[1], 'empty')
 
-def p_statement_expr(p): 
-    'statement : PRINT LPAREN expression RPAREN' 
-    #print(p[3]) 
-    p[0] = ('print', p[3])
+def p_statement_expr(p):
+    '''statement : PRINT LPAREN expression_print_list RPAREN'''
+    p[0] = ('print_multi', p[3])
 
+def p_expression_print_list(p):
+    '''expression_print_list : expression
+                       | expression_print_list COMMA expression'''
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[3]]
 def p_statement_assign(p):
     '''statement : NAME EGAL expression
                  | name_list EGAL expression_list'''
@@ -255,6 +274,15 @@ def p_expression_binop_inf(p):
 def p_statement_switch(p):
     '''statement : SWITCH LPAREN expression RPAREN LBRACKET case cases default RBRACKET'''
     p[0] = ('switch', p[3], p[6], p[7], p[8])
+
+
+def p_statement_Fuction(p):
+    '''statement : SWITCH LPAREN expression RPAREN LBRACKET case cases default RBRACKET'''
+    p[0] = ('switch', p[3], p[6], p[7], p[8])
+
+def p_expression_string(p):
+    'expression : STRING'
+    p[0] = p[1]
 
 def p_case(p):
     '''case : CASE expression COLON bloc'''
