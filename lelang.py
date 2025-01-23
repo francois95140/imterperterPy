@@ -75,11 +75,11 @@ lex.lex()
 names={}
 
 precedence = (
-        ('left','OR' ), 
-        ('left','AND'), 
-        ('nonassoc', 'INF', 'INFEG', 'EGALEGAL', 'SUP'), 
-        ('left','PLUS', 'MINUS' ), 
-        ('left','TIMES', 'DIVIDE'), 
+        ('left','OR' ),
+        ('left','AND'),
+        ('nonassoc', 'INF', 'INFEG', 'EGALEGAL', 'SUP'),
+        ('left','PLUS', 'MINUS' ),
+        ('left','TIMES', 'DIVIDE'),
         )
 
 def evalinst(t):
@@ -102,7 +102,13 @@ def evalinst(t):
         if evalExpr(t[1]):
             evalinst(t[2])
         elif len(t) > 3:
-            evalinst(t[3])
+            for i in range(3, len(t), 2):
+                if i + 1 < len(t):
+                    if evalExpr(t[i]):
+                        evalinst(t[i+1])
+                        break
+                else:
+                    evalinst(t[i])
     if t[0] == 'while':
         while evalExpr(t[1]):
             evalinst(t[2])
@@ -186,11 +192,21 @@ def p_statement_decrement(p):
 
 def p_statement_if(p):
     '''statement : IF LPAREN expression RPAREN LBRACKET bloc RBRACKET
-                 | IF LPAREN expression RPAREN LBRACKET bloc RBRACKET ELSE LBRACKET bloc RBRACKET'''
+                 | IF LPAREN expression RPAREN LBRACKET bloc RBRACKET ELSE LBRACKET bloc RBRACKET
+                 | IF LPAREN expression RPAREN LBRACKET bloc RBRACKET ELIF LPAREN expression RPAREN LBRACKET bloc RBRACKET
+                 | IF LPAREN expression RPAREN LBRACKET bloc RBRACKET ELIF LPAREN expression RPAREN LBRACKET bloc RBRACKET ELSE LBRACKET bloc RBRACKET'''
     if len(p) == 8:
+        # if
         p[0] = ('if', p[3], p[6])
-    else:
+    elif len(p) == 12:
+        # If & else
         p[0] = ('if', p[3], p[6], p[10])
+    elif len(p) == 15:
+        # If & elif
+        p[0] = ('if', p[3], p[6], p[10], p[13])
+    elif len(p) == 19:
+        # If & elif & else
+        p[0] = ('if', p[3], p[6], p[10], p[13], p[17])
 
 def p_expression_binop_inf(p):
     '''expression : expression INF expression

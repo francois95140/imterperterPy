@@ -36,7 +36,7 @@ Interpréteur de mini Langage
 
 * [ ] Fonctions void
 * [ ] Fonction return avec coupe circuit
-* [ ] Gérer les elif
+* [X] Gérer les elif
 * [ ] Scope
 * [ ] Fonctions avec return et scope des variables et gestion de la pile d’exécution
 * [ ] Les tableaux (suivant degré d’aboutissement : push, pop, len, printTab, init)
@@ -57,7 +57,7 @@ Interpréteur de mini Langage
 * [ ] comparaison multiples à la python : 1<2<3 (déconseillé)
 * [ ] print multiples : print(x+2, « toto ») ;
 * [X] incrémentation et affectation élargie : x++, x+=1
-* [ ] possibilités de mettre des commentaires dans le code (et génération automatique d’une docString)
+* [X] possibilités de mettre des commentaires dans le code (et génération automatique d’une docString)
 * [ ] printString
 * [X] input utilisateur
   Rendu :
