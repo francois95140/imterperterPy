@@ -1,6 +1,7 @@
-x = 2;
-switch (x) {
-    case 1:
+p,po = 6,60;
+
+switch (p) {
+    case 6:
         print(1);
     case 2:
         print(2);
@@ -27,4 +28,4 @@ else {
 // */
 
 
-print(x);
+print(po);

@@ -1,10 +1,9 @@
+# -*- coding: utf-8 -*-
  
 import ply.lex as lex
 import ply.yacc as yacc
 from genereTreeGraphviz2 import printTreeGraph
- 
- 
- 
+
 reserved={
         'print':'PRINT',
         'for': 'FOR',
@@ -20,7 +19,7 @@ reserved={
 tokens = [
     'NUMBER','MINUS', 'PLUS','TIMES','DIVIDE', 'LPAREN',
     'RPAREN', 'OR', 'AND', 'SEMI', 'EGAL', 'NAME', 'INF', 'SUP',
-    'EGALEGAL','INFEG','INCREMENT','DECREMENT', 'COLON','LBRACKET', 'RBRACKET'
+    'EGALEGAL','INFEG','INCREMENT','DECREMENT', 'COLON', 'COMMA','LBRACKET', 'RBRACKET'
 ]+ list(reserved.values())
  
 t_PLUS = r'\+'
@@ -30,6 +29,7 @@ t_DIVIDE = r'/'
 t_INCREMENT = r'\+\+'
 t_DECREMENT = r'\-\-'
 t_COLON = r'\:'
+t_COMMA = r'\,'
 t_LPAREN = r'\('
 t_RPAREN = r'\)'
 t_LBRACKET = r'\{'
@@ -84,8 +84,15 @@ precedence = (
 
 def evalinst(t):
     print('evalInst', t)
-    if t == 'empty' : return 
-    if t[0] == 'assign' : names[t[1]]=evalExpr(t[2])
+    if t == 'empty' : return
+    if t[0] == 'multiple_assign':
+        values = [evalExpr(expr) for expr in t[2]]
+        for name, value in zip(t[1], values):
+            names[name] = value
+
+        # Affectation simple
+    elif t[0] == 'assign':
+        names[t[1]] = evalExpr(t[2])
     if t[0] == 'print' : print('CALC>' , evalExpr(t[1]))
     if t[0] == 'increment' : names[t[1]] += 1
     if t[0] == 'decrement' : names[t[1]] -= 1
@@ -174,9 +181,33 @@ def p_statement_expr(p):
     p[0] = ('print', p[3])
 
 def p_statement_assign(p):
-    'statement : NAME EGAL expression'
-    #names[p[1]]=p[3] 
-    p[0] = ('assign', p[1], p[3])
+    '''statement : NAME EGAL expression
+                 | name_list EGAL expression_list'''
+    if len(p) == 4:
+        if isinstance(p[1], list):  # Affectation multiple
+            if len(p[1]) != len(p[3]):
+                print("Erreur : nombre différent de variables et de valeurs")
+                p[0] = 'empty'
+            else:
+                p[0] = ('multiple_assign', p[1], p[3])
+        else:  # Affectation simple
+            p[0] = ('assign', p[1], p[3])
+
+def p_name_list(p):
+    '''name_list : NAME
+                 | name_list COMMA NAME'''
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[3]]
+
+def p_expression_list(p):
+    '''expression_list : expression
+                       | expression_list COMMA expression'''
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[3]]
 
 def p_statement_decrement_prefix(p):
     '''statement : DECREMENT NAME'''
