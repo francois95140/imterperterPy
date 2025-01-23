@@ -53,7 +53,7 @@ Interpréteur de mini Langage
 * [ ] Gérer la déclaration explicite des variables
 * [ ] Gestion du type chaine de caractères (et extension d’autant de l’instruction d’affichage)
 * [ ] Gestion des variables globales
-* [ ] affectations multiples à la python : a, b = 2, 3
+* [X] affectations multiples à la python : a, b = 2, 3
 * [ ] comparaison multiples à la python : 1<2<3 (déconseillé)
 * [ ] print multiples : print(x+2, « toto ») ;
 * [X] incrémentation et affectation élargie : x++, x+=1
