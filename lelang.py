@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
- 
 import ply.lex as lex
 import ply.yacc as yacc
 from genereTreeGraphviz2 import printTreeGraph
@@ -62,9 +60,10 @@ def t_COMMENT(t):
     r'//.*'
     pass
 
-# def t_MULTILINECOMMENT(t):
-#     r'\/\*[\s\S]*?\*\/'
-#     pass
+def t_MULTILINECOMMENT(t):
+    r'/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/'
+    t.lexer.lineno += t.value.count('\n')
+    pass
 
 t_ignore = ' \t'
 
@@ -240,24 +239,6 @@ def p_statement_decrement(p):
     '''statement : NAME DECREMENT'''
     p[0] = ('decrement', p[1])
 
-def p_statement_if(p):
-    '''statement : IF LPAREN expression RPAREN LBRACKET bloc RBRACKET
-                 | IF LPAREN expression RPAREN LBRACKET bloc RBRACKET ELSE LBRACKET bloc RBRACKET
-                 | IF LPAREN expression RPAREN LBRACKET bloc RBRACKET ELIF LPAREN expression RPAREN LBRACKET bloc RBRACKET
-                 | IF LPAREN expression RPAREN LBRACKET bloc RBRACKET ELIF LPAREN expression RPAREN LBRACKET bloc RBRACKET ELSE LBRACKET bloc RBRACKET'''
-    if len(p) == 8:
-        # if
-        p[0] = ('if', p[3], p[6])
-    elif len(p) == 12:
-        # If & else
-        p[0] = ('if', p[3], p[6], p[10])
-    elif len(p) == 15:
-        # If & elif
-        p[0] = ('if', p[3], p[6], p[10], p[13])
-    elif len(p) == 19:
-        # If & elif & else
-        p[0] = ('if', p[3], p[6], p[10], p[13], p[17])
-
 def p_expression_binop_inf(p):
     '''expression : expression INF expression
     | expression INFEG expression
@@ -275,10 +256,35 @@ def p_statement_switch(p):
     '''statement : SWITCH LPAREN expression RPAREN LBRACKET case cases default RBRACKET'''
     p[0] = ('switch', p[3], p[6], p[7], p[8])
 
+def p_statement_if(p):
+    '''statement : if_stmt'''
+    p[0] = p[1]
 
-def p_statement_Fuction(p):
-    '''statement : SWITCH LPAREN expression RPAREN LBRACKET case cases default RBRACKET'''
-    p[0] = ('switch', p[3], p[6], p[7], p[8])
+def p_if_stmt(p):
+    '''if_stmt : IF LPAREN expression RPAREN LBRACKET bloc RBRACKET
+               | IF LPAREN expression RPAREN LBRACKET bloc RBRACKET elif_stmts
+               | IF LPAREN expression RPAREN LBRACKET bloc RBRACKET ELSE LBRACKET bloc RBRACKET
+               | IF LPAREN expression RPAREN LBRACKET bloc RBRACKET elif_stmts ELSE LBRACKET bloc RBRACKET'''
+    if len(p) == 8:  # Simple if
+        p[0] = ('if', p[3], p[6])
+    elif len(p) == 9:  # if avec elif
+        p[0] = ('if', p[3], p[6], *p[8])
+    elif len(p) == 12:  # if avec else
+        p[0] = ('if', p[3], p[6], p[10])
+    else:  # if avec elif et else
+        p[0] = ('if', p[3], p[6], *p[8], p[11])
+
+def p_elif_stmts(p):
+    '''elif_stmts : elif_stmt
+                  | elif_stmts elif_stmt'''
+    if len(p) == 2:  # Un seul elif
+        p[0] = p[1]
+    else:  # Plusieurs elif
+        p[0] = p[1] + p[2]
+
+def p_elif_stmt(p):
+    '''elif_stmt : ELIF LPAREN expression RPAREN LBRACKET bloc RBRACKET'''
+    p[0] = [p[3], p[6]]
 
 def p_expression_string(p):
     'expression : STRING'

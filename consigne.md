@@ -59,7 +59,7 @@ Interpréteur de mini Langage
 * [X] print multiples : print(x+2, « toto ») ;
 * [X] incrémentation et affectation élargie : x++, x+=1
 * [X] possibilités de mettre des commentaires dans le code (et génération automatique d’une docString)
-* [ ] printString
+* [X] printString
 * [X] input utilisateur
   Rendu :
 

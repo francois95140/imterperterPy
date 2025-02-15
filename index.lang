@@ -1,5 +1,13 @@
 p,po = 6,60;
-
+bo=10;
+x = "Hello";
+y = "World";
+print(x);
+print(y);
+print("Concat: " + x + " " + y);
+x = 9;
+print(x+2, " toto ", "test");
+print("Valeur : ", x, " et ajout : ", x+3);
 switch (p) {
     case 6:
         print(1);
@@ -10,10 +18,10 @@ switch (p) {
         print(0);
 }
 
-if (x==1) {
+if (bo==1) {
     print(1);
 }
-elif (x==10) {
+elif (bo==10) {
     print(3);
 }
 else {
@@ -22,10 +30,11 @@ else {
 // test
 
 // /* ggggg */
-// /* 
+// /*
 // * hhh
 // * ggg
 // */
-
+/*klnljknlnlkn
+bhbjbhbbj*/
 
 print(po);
