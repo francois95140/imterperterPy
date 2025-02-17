@@ -34,15 +34,15 @@ Interpréteur de mini Langage
 
 ### Améliorations :
 
-* [ ] Fonctions void
+* [X] Fonctions void
 * [ ] Fonction return avec coupe circuit
 * [X] Gérer les swish case
 * [X] Gérer les elif
 * [ ] Scope
 * [ ] Fonctions avec return et scope des variables et gestion de la pile d’exécution
-* [ ] Les tableaux (suivant degré d’aboutissement : push, pop, len, printTab, init)
+* [X] Les tableaux (suivant degré d’aboutissement : push, pop, len, printTab, init)
 * [ ] la POO (suivant degré d’aboutissement)
-* [ ] Gérer le passage des paramètres par référence et les pointeurs (suivant degré
+* [X] Gérer le passage des paramètres par référence et les pointeurs (suivant degré
   d’aboutissement)
 * [ ] Coder une fonction eval ou exec (à la python)
 * [ ] Optimiser l’interprétation de fonctions récursives terminales (sur la taille de la pile)

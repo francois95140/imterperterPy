@@ -12,7 +12,12 @@ reserved={
         'if': 'IF',
         'else': 'ELSE',
         'elif': 'ELIF',
-        'void': 'VOID'
+        'void': 'VOID',
+        'push': 'PUSH',
+        'pop': 'POP',
+        'len': 'LEN',
+        'printTab': 'PRINTTAB',
+        'init': 'INIT'
         }
  
 tokens = [
@@ -41,8 +46,6 @@ t_INF = r'\<'
 t_SUP = r'>'
 t_INFEG = r'\<\='
 t_EGALEGAL = r'\=\='
-
-functions = {}
 
 def t_NAME(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
@@ -80,7 +83,7 @@ def t_error(t):
 
 lex.lex()
 names={}
-
+functions = {}
 precedence = (
         ('left','OR' ),
         ('left','AND'),
@@ -146,6 +149,34 @@ def evalinst(t):
                     break
         if not executed and t[3] != '':
             evalinst(t[3][1])
+
+    if t[0] == 'array_init':
+        names[t[1]] = []
+        return
+
+    elif t[0] == 'array_push':
+        if t[1] not in names or not isinstance(names[t[1]], list):
+            print(f"Error: {t[1]} is not an array")
+            return
+        val = evalExpr(t[2])
+        names[t[1]].append(val)
+        return
+
+    elif t[0] == 'array_pop':
+        if t[1] not in names or not isinstance(names[t[1]], list):
+            print(f"Error: {t[1]} is not an array")
+            return None
+        if len(names[t[1]]) == 0:
+            print(f"Error: Array {t[1]} is empty")
+            return None
+        return names[t[1]].pop()
+
+    elif t[0] == 'array_print':
+        if t[1] not in names or not isinstance(names[t[1]], list):
+            print(f"Error: {t[1]} is not an array")
+            return
+        print('CALC>', names[t[1]])
+        return
     if t[0] == 'function_declaration':
         pass
     elif t[0] == 'function_call':
@@ -179,6 +210,13 @@ def evalExpr(t) :
         if t in names:
             return names[t]
         return t
+
+    if t[0] == 'array_len':
+        if t[1] not in names or not isinstance(names[t[1]], list):
+            print(f"Error: {t[1]} is not an array")
+            return 0
+        return len(names[t[1]])
+
     if type(t) is str : return names[t]
     if t[0]=='+' : return evalExpr(t[1])+evalExpr(t[2])
     if t[0]=='-' : return evalExpr(t[1])-evalExpr(t[2])
@@ -216,6 +254,26 @@ def p_bloc(p):
 def p_statement_expr(p):
     '''statement : PRINT LPAREN expression_print_list RPAREN'''
     p[0] = ('print_multi', p[3])
+
+def p_statement_array_init(p):
+    '''statement : INIT LPAREN NAME RPAREN'''
+    p[0] = ('array_init', p[3])
+
+def p_statement_array_push(p):
+    '''statement : PUSH LPAREN NAME COMMA expression RPAREN'''
+    p[0] = ('array_push', p[3], p[5])
+
+def p_statement_array_pop(p):
+    '''statement : POP LPAREN NAME RPAREN'''
+    p[0] = ('array_pop', p[3])
+
+def p_expression_array_len(p):
+    '''expression : LEN LPAREN NAME RPAREN'''
+    p[0] = ('array_len', p[3])
+
+def p_statement_array_print(p):
+    '''statement : PRINTTAB LPAREN NAME RPAREN'''
+    p[0] = ('array_print', p[3])
 
 def p_expression_print_list(p):
     '''expression_print_list : expression

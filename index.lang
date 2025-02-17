@@ -50,7 +50,7 @@ greet("Alice");*/
 /*void sayHello() {
     print("Hello World");
 }
-sayHello();*/
+sayHello();
 
 void check(name) {
     if (name > 0) {
@@ -61,4 +61,27 @@ void check(name) {
         print("Zero");
     }
 }
-check(0);
+check(0);*/
+
+/*init(tab);
+print("Test d'initialisation:");
+printTab(tab);
+print("Longueur initiale:");
+print(len(tab));
+
+print("Test de push:");
+push(tab, 10);
+push(tab, 20);
+push(tab, 30);
+printTab(tab);
+print("Nouvelle longueur:");
+print(len(tab));*/
+
+void greet(name) {
+    x = 7;
+    print("Hello", name);
+    print("Hello", x);
+}
+greet("Alice");
+print(x);
+
