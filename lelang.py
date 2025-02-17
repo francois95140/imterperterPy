@@ -11,7 +11,8 @@ reserved={
         'default': 'DEFAULT',
         'if': 'IF',
         'else': 'ELSE',
-        'elif': 'ELIF'
+        'elif': 'ELIF',
+        'void': 'VOID'
         }
  
 tokens = [
@@ -40,7 +41,9 @@ t_INF = r'\<'
 t_SUP = r'>'
 t_INFEG = r'\<\='
 t_EGALEGAL = r'\=\='
- 
+
+functions = {}
+
 def t_NAME(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
     t.type = reserved.get(t.value,'NAME')    # Check for reserved words
@@ -93,8 +96,6 @@ def evalinst(t):
         values = [evalExpr(expr) for expr in t[2]]
         for name, value in zip(t[1], values):
             names[name] = value
-
-        # Affectation simple
     elif t[0] == 'assign':
         names[t[1]] = evalExpr(t[2])
     if t[0] == 'print' : print('CALC>' , evalExpr(t[1]))
@@ -145,6 +146,31 @@ def evalinst(t):
                     break
         if not executed and t[3] != '':
             evalinst(t[3][1])
+    if t[0] == 'function_declaration':
+        pass
+    elif t[0] == 'function_call':
+        function_name = t[1]
+        if function_name not in functions:
+            print(f"Error: Function {function_name} not defined")
+            return
+
+        local_names = names.copy()
+
+        args = [evalExpr(arg) for arg in t[2]]
+
+        func = functions[function_name]
+        for param, arg in zip(func['params'], args):
+            local_names[param] = arg
+
+        global_names = names.copy()
+
+        names.clear()
+        names.update(local_names)
+
+        evalinst(func['body'])
+
+        names.clear()
+        names.update(global_names)
 
 def evalExpr(t) : 
     print('evalExpr', t)
@@ -251,6 +277,40 @@ def p_expression_binop_inf(p):
     | expression DIVIDE expression
     | expression SUP expression''' 
     p[0] = (p[2],p[1],p[3])
+
+def p_statement_function_declaration(p):
+    '''statement : VOID NAME LPAREN parameter_list RPAREN LBRACKET bloc RBRACKET
+                | VOID NAME LPAREN RPAREN LBRACKET bloc RBRACKET'''
+    if len(p) == 9:
+        p[0] = ('function_declaration', p[2], p[4], p[7])
+        functions[p[2]] = {'params': p[4], 'body': p[7]}
+    else:
+        p[0] = ('function_declaration', p[2], [], p[6])
+        functions[p[2]] = {'params': [], 'body': p[6]}
+
+def p_parameter_list(p):
+    '''parameter_list : NAME
+                     | parameter_list COMMA NAME'''
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[3]]
+
+def p_statement_function_call(p):
+    '''statement : NAME LPAREN argument_list RPAREN
+                | NAME LPAREN RPAREN'''
+    if len(p) == 5:  # Avec arguments
+        p[0] = ('function_call', p[1], p[3])
+    else:  # Sans arguments
+        p[0] = ('function_call', p[1], [])
+
+def p_argument_list(p):
+    '''argument_list : expression
+                    | argument_list COMMA expression'''
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[3]]
 
 def p_statement_switch(p):
     '''statement : SWITCH LPAREN expression RPAREN LBRACKET case cases default RBRACKET'''

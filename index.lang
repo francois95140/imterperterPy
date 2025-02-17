@@ -1,4 +1,4 @@
-p,po = 6,60;
+/*p,po = 6,60;
 bo=10;
 x = "Hello";
 y = "World";
@@ -34,7 +34,31 @@ else {
 // * hhh
 // * ggg
 // */
-/*klnljknlnlkn
-bhbjbhbbj*/
+klnljknlnlkn
+bhbjbhbbj
 
-print(po);
+print(po);*/
+
+/*void greet(name) {
+    if (name > 0) {
+        print("Positive");
+    }
+    print("Hello", name);
+}
+greet("Alice");*/
+
+/*void sayHello() {
+    print("Hello World");
+}
+sayHello();*/
+
+void check(name) {
+    if (name > 0) {
+        print("Positive");
+    } elif (name < 0) {
+        print("Negative");
+    } else {
+        print("Zero");
+    }
+}
+check(0);
